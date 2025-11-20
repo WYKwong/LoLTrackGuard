@@ -17,6 +17,9 @@ Trained on real pro player data, LoLTrackGuard offers a non-intrusive way to fla
 ```bash
 LoLTrackGuard-MAIN/
 ├── cursor_templates/                # Cursor icon PNGs with transparency (for FakeDataGenerator)
+├── extension/                       # C++/CUDA Acceleration Module
+│   ├── setup.py                     # Build script
+│   └── src/                         # C++ and CUDA source files
 ├── model/                           # Trained LSTM models for anomaly detection
 │   ├── detection_model.keras        # Default trained LSTM model
 │   ├── detection_model2.keras       # Alternate model versions
@@ -25,6 +28,7 @@ LoLTrackGuard-MAIN/
 ├── pipeline/                       # Core logic scripts
 │   ├── analyzer.py                 # Runs analysis using a trained model
 │   ├── cursorDetector.py          # Detects cursor in videos using YOLO and outputs CSV
+│   ├── cursorDetector_accelerated.py # High-Performance version (C++/Numba)
 │   ├── dataModifier.py            # Extracts motion features and normalizes them
 │   └── modelTrainer.py            # Trains LSTM anomaly detection model
 ├── utils/                          # Resource files and utility scripts
@@ -167,3 +171,32 @@ The results are saved to `analysis_results/` as CSV files, where each row corres
 
 ### ⚠️ Figure 5: Suspicious Gameplay Mouse Movement
 ![Suspicious Gameplay Data](utils/img/5.png)
+
+---
+
+## 🚀 High-Performance Mode (C++/CUDA)
+
+LoLTrackGuard now includes an accelerated processing pipeline.
+
+### Features
+- **Hybrid Acceleration**: Automatically uses `Numba` (JIT CUDA) and `Threading` if the C++ extension is not compiled.
+- **Async Video Decoding**: Decouples reading from inference.
+- **Custom CUDA Kernels**: Pre-processing filters to highlight cursor candidates.
+
+### Setup (Optional C++ Extension)
+For maximum performance, you can compile the native C++ extension:
+
+1. Ensure `CUDA Toolkit` and `Visual Studio` (MSVC) are installed.
+2. Configure OpenCV paths in `extension/setup.py`.
+3. Run:
+   ```bash
+   cd extension
+   python setup.py install
+   cd ..
+   ```
+
+### Usage
+Run the accelerated detector:
+```bash
+python pipeline/cursorDetector_accelerated.py
+```
